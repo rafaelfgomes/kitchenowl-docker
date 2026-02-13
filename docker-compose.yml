@@ -1,6 +1,7 @@
 services:
   database:
     image: postgres:15
+    container_name: kitchenowl-db
     security_opt:
       - "no-new-privileges:true"
     restart: always
@@ -21,6 +22,7 @@ services:
 
   backend:
     image: tombursch/kitchenowl-backend
+    container_name: kitchenowl-backend
     restart: unless-stopped
     environment:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -38,6 +40,7 @@ services:
 
   frontend:
     image: tombursch/kitchenowl-web
+    container_name: kitchenowl-app
     restart: unless-stopped
     environment:
       - BACK_URL=backend:5000
