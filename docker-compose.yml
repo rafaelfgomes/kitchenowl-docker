@@ -30,7 +30,7 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ${KITCHENOWL_DATA_FOLDER:./data}:/data
+      - ${KITCHENOWL_DATA_FOLDER:-./data}:/data
     depends_on:
       - database
     networks:
