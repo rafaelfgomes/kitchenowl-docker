@@ -1,0 +1,60 @@
+services:
+  database:
+    image: postgres:15
+    security_opt:
+      - "no-new-privileges:true"
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks:
+      local:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+
+  backend:
+    image: tombursch/kitchenowl-backend
+    restart: unless-stopped
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DB_DRIVER: postgresql
+      DB_HOST: database
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${KITCHENOWL_DATA_FOLDER:./data}:/data
+    depends_on:
+      - database
+    networks:
+      local:
+
+  frontend:
+    image: tombursch/kitchenowl-web
+    restart: unless-stopped
+    environment:
+      - BACK_URL=backend:5000
+    depends_on:
+      - backend
+    networks:
+      local:
+      external:
+        ipv4_address: ${KITCHENOWL_IP}
+
+volumes:
+  dbdata:
+    name: kitchenowl-dbdata
+
+networks:
+  external:
+    external: true
+    name: ${EXTERNAL_NETWORK_NAME}
+  local:
+    name: kitchenowl-local-network
